@@ -1,4 +1,4 @@
-# Almaria Perfumes
+# Ziba Perfumes
 
 Sitio web de comercio electrónico para venta de perfumes, con catálogo de 260 fragancias de 46 casas.
 
