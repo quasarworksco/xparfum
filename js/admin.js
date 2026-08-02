@@ -7,29 +7,23 @@
 import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js";
 import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js";
 
-/* ── Credenciales de acceso (uso interno) ── */
+/* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "Quasar123.";
-const ADMIN_EMAIL = "admin@admin.com"; // usuario espejo en Firebase Auth (opcional)
+const ADMIN_PASS = "xparfum123.";
 
-/* ── Firebase (carga tolerante a fallos: el login es local) ── */
-let db = null, auth = null, firebaseOK = false;
+/* ── Firebase (solo Firestore; carga tolerante a fallos) ── */
+let db = null, firebaseOK = false;
 let collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc,
-  deleteDoc, serverTimestamp, query, orderBy, limit,
-  signInWithEmailAndPassword, signOut;
+  deleteDoc, serverTimestamp, query, orderBy, limit;
 try {
   const { initializeApp } = await import(
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
   const fs = await import(
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-  const au = await import(
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
   ({ collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc,
      deleteDoc, serverTimestamp, query, orderBy, limit } = fs);
-  ({ signInWithEmailAndPassword, signOut } = au);
   const app = initializeApp(firebaseConfig);
   db = fs.getFirestore(app);
-  auth = au.getAuth(app);
   firebaseOK = true;
 } catch (e) {
   console.warn("Firebase no disponible; el panel funciona sin guardar.", e);
@@ -86,29 +80,18 @@ $("login-form").addEventListener("submit", async (e) => {
     return;
   }
   sessionStorage.setItem("xparfum_admin", "1");
-
-  // Sesión espejo en Firebase Auth para que las reglas de Firestore
-  // permitan escribir. Si el usuario no existe aún, avisamos.
-  if (firebaseOK) {
-    try {
-      await signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASS);
-    } catch {
-      toast("Aviso: no se pudo iniciar sesión en Firebase (¿creaste admin@admin.com?). Podrás ver datos pero no guardar.", "error");
-    }
-  } else {
+  if (!firebaseOK) {
     toast("Sin conexión con Firebase: el panel abre pero no podrá guardar datos.", "error");
   }
   mostrarPanel();
 });
 
-$("logout-btn").addEventListener("click", async () => {
+$("logout-btn").addEventListener("click", () => {
   sessionStorage.removeItem("xparfum_admin");
-  if (firebaseOK) { try { await signOut(auth); } catch { /* sin sesión */ } }
   location.reload();
 });
 
 if (sessionStorage.getItem("xparfum_admin") === "1") {
-  if (firebaseOK) signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASS).catch(() => {});
   mostrarPanel();
 }
 

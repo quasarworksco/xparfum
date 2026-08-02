@@ -32,16 +32,14 @@ Sitio web de comercio electrónico para venta de perfumes, con catálogo, carrit
 
 ### Acceso al panel (uso interno)
 
-El ingreso es con **usuario y contraseña fijos definidos en el código** (`js/admin.js`, constantes `ADMIN_USER` / `ADMIN_PASS`). Usuario actual: `admin`.
+El ingreso es con **usuario y contraseña fijos definidos en el código** (`js/admin.js`, constantes `ADMIN_USER` / `ADMIN_PASS`):
 
-Además, al ingresar, el panel intenta abrir una **sesión espejo en Firebase Authentication** con el correo `admin@admin.com` y la misma contraseña. Esa sesión es la que permite escribir en Firestore según las reglas. Para habilitarla (una sola vez):
+- Usuario: `admin`
+- Contraseña: la definida en `ADMIN_PASS`
 
-1. En [Firebase Console → Authentication](https://console.firebase.google.com/project/xparfum-38673/authentication/providers), habilita el proveedor **Correo electrónico/contraseña** y crea el usuario:
-   - Correo: `admin@admin.com`
-   - Contraseña: la misma `ADMIN_PASS` del código
-2. En **Authentication → Settings → User actions**, desactiva **"Enable create (sign-up)"** para que nadie más pueda crearse una cuenta.
+No se usa Firebase Authentication: el login es 100% local. Para cambiar la clave, edita `ADMIN_PASS` en `js/admin.js`.
 
-> Si la sesión espejo no existe, el panel abre igual (el login es local) pero Firestore rechazará los guardados.
+> ⚠️ Al no haber autenticación en Firebase, las reglas de Firestore deben permitir escritura abierta (ver abajo). Esto significa que la protección real del panel es la URL privada + el login del código. No compartas `admin.html` públicamente.
 
 ### Reglas de Firestore
 
@@ -51,33 +49,22 @@ Publícalas en [Firestore → Reglas](https://console.firebase.google.com/projec
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function esAdmin() {
-      return request.auth != null;
-    }
-    match /perfumes/{id} {
-      allow read: if true;        // catálogo público
-      allow write: if esAdmin();
-    }
-    // Pedidos web: el cliente (sin login) puede crear; solo el admin gestiona
-    match /pedidos/{id} {
-      allow create: if true;
-      allow read, update, delete: if esAdmin();
-    }
-    // Config pública (tasas de moneda): la lee la tienda, la edita el admin
-    match /config/{id} {
-      allow read: if true;
-      allow write: if esAdmin();
-    }
-    match /costos/{id}      { allow read, write: if esAdmin(); }
-    match /ventas/{id}      { allow read, write: if esAdmin(); }
-    match /proveedores/{id} { allow read, write: if esAdmin(); }
-    match /clientes/{id}    { allow read, write: if esAdmin(); }
-    match /movimientos/{id} { allow read, write: if esAdmin(); }
+    // Sin Firebase Auth: el acceso al panel se controla en el código
+    // (login local). Estas reglas abren lectura/escritura a las
+    // colecciones que usa la aplicación.
+    match /perfumes/{id}    { allow read, write: if true; }
+    match /pedidos/{id}     { allow read, write: if true; }
+    match /config/{id}      { allow read, write: if true; }
+    match /costos/{id}      { allow read, write: if true; }
+    match /ventas/{id}      { allow read, write: if true; }
+    match /proveedores/{id} { allow read, write: if true; }
+    match /clientes/{id}    { allow read, write: if true; }
+    match /movimientos/{id} { allow read, write: if true; }
   }
 }
 ```
 
-Cualquier visitante puede leer el catálogo, pero solo la sesión admin puede escribir. **Los costos nunca se guardan en la colección pública** (`costos` es privada).
+Las reglas están abiertas porque el panel no usa Firebase Authentication (el login es local, en el código). Los costos se guardan en la colección `costos`, separada del catálogo público `perfumes`.
 
 ### Colecciones en Firestore
 
