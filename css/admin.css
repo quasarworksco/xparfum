@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   XParfm · Panel Admin — Identidad: marrón humo + dorado
+   XParfum · Panel Admin — Identidad: marrón humo + dorado
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
@@ -169,6 +169,11 @@ img { max-width: 100%; }
 
 /* ═══════ Main ═══════ */
 .main { flex: 1; min-width: 0; padding: 1.8rem 2rem 3rem; }
+.section { animation: secIn 0.45s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+@keyframes secIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
 .section-head {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: 0.8rem; margin-bottom: 1.3rem;
@@ -200,7 +205,9 @@ img { max-width: 100%; }
   background: linear-gradient(168deg, var(--surface-2), var(--surface) 65%);
   border: 1px solid var(--line-soft); border-radius: var(--radius);
   padding: 1rem 1.15rem;
+  transition: transform 0.25s ease, border-color 0.25s ease;
 }
+.stat:hover { transform: translateY(-3px); border-color: var(--line); }
 .stat-label {
   font-size: 0.7rem; letter-spacing: 0.13em; text-transform: uppercase;
   color: var(--gold); font-weight: 500;
@@ -361,4 +368,13 @@ img { max-width: 100%; }
   .two-col { grid-template-columns: 1fr; }
   .modal-grid { grid-template-columns: 1fr; }
   .venta-linea { grid-template-columns: 1fr 60px 76px 26px; }
+}
+
+/* Accesibilidad: reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

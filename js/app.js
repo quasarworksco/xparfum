@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   XParfm · Tienda pública
+   XParfum · Tienda pública
    Búsqueda · filtros · mayor/detal · destacados · carrito · pedidos
    ═══════════════════════════════════════════════════════════════ */
 
@@ -33,7 +33,7 @@ const state = {
   orden: "casa",
   pagina: 1,
   tasas: { propia: null, bcv: null },
-  carrito: JSON.parse(localStorage.getItem("xparfm_carrito") || "[]"),
+  carrito: JSON.parse(localStorage.getItem("xparfum_carrito") || "[]"),
 };
 
 /* ── Helpers ── */
@@ -126,7 +126,10 @@ function cardHTML(p) {
   return `
   <article class="card" data-id="${p.id}">
     <div class="card-img"${p.imagen ? ` style="background-image:url('${p.imagen}')"` : ""}>
-      ${p.imagen ? `<img src="${p.imagen}" alt="${p.casa} ${p.nombre}" loading="lazy" />` : `<span class="placeholder">${inicial}</span>`}
+      ${p.imagen
+        ? `<img src="${p.imagen}" alt="${p.casa} ${p.nombre}" loading="lazy"
+             onerror="this.closest('.card-img').classList.add('img-error'); this.remove();" />`
+        : `<span class="placeholder">${inicial}</span>`}
       ${antes ? `<span class="card-badge">Oferta</span>` : ""}
     </div>
     <div class="card-body">
@@ -220,7 +223,7 @@ function syncChips() {
 
 /* ── Carrito ── */
 function guardarCarrito() {
-  localStorage.setItem("xparfm_carrito", JSON.stringify(state.carrito));
+  localStorage.setItem("xparfum_carrito", JSON.stringify(state.carrito));
 }
 function totalCarrito() {
   return state.carrito.reduce((s, it) => s + it.precio * it.cantidad, 0);
@@ -234,7 +237,11 @@ function agregarAlCarrito(id) {
   else state.carrito.push({ id: p.id, casa: p.casa, nombre: p.nombre, precio, cantidad: 1, modo: state.modo });
   guardarCarrito();
   renderCarrito();
-  abrirCarrito();
+  // Pulso del botón flotante como feedback
+  const fab = $("cart-fab");
+  fab.classList.remove("pulso");
+  void fab.offsetWidth; // reinicia la animación
+  fab.classList.add("pulso");
 }
 
 function renderCarrito() {
@@ -279,7 +286,7 @@ function textoPedido(nombre, telefono) {
     (it) => `• ${it.cantidad} × ${it.casa} — ${it.nombre} (${money(it.precio)} c/u) = ${money(it.precio * it.cantidad)}`
   );
   return [
-    `🛍️ *Pedido XParfm*`,
+    `🛍️ *Pedido XParfum*`,
     ``,
     `Cliente: ${nombre}`,
     `Teléfono: ${telefono}`,

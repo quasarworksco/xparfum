@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   XParfm · Panel de administración
+   XParfum · Panel de administración
    Login interno · productos · pedidos · ventas · deudores ·
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
@@ -85,7 +85,7 @@ $("login-form").addEventListener("submit", async (e) => {
     err.hidden = false;
     return;
   }
-  sessionStorage.setItem("xparfm_admin", "1");
+  sessionStorage.setItem("xparfum_admin", "1");
 
   // Sesión espejo en Firebase Auth para que las reglas de Firestore
   // permitan escribir. Si el usuario no existe aún, avisamos.
@@ -102,12 +102,12 @@ $("login-form").addEventListener("submit", async (e) => {
 });
 
 $("logout-btn").addEventListener("click", async () => {
-  sessionStorage.removeItem("xparfm_admin");
+  sessionStorage.removeItem("xparfum_admin");
   if (firebaseOK) { try { await signOut(auth); } catch { /* sin sesión */ } }
   location.reload();
 });
 
-if (sessionStorage.getItem("xparfm_admin") === "1") {
+if (sessionStorage.getItem("xparfum_admin") === "1") {
   if (firebaseOK) signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASS).catch(() => {});
   mostrarPanel();
 }
@@ -686,7 +686,7 @@ function renderDeudores() {
        <button class="btn btn-ghost" data-abono="${v.id}" style="padding:.3rem .8rem;font-size:.78rem">Abonar</button></div>`).join("");
     const wa = d.telefono
       ? `https://wa.me/${String(d.telefono).replace(/\D/g, "")}?text=${encodeURIComponent(
-          `Hola ${cliente} 👋 Te recordamos que tienes un saldo pendiente de ${money(deuda)} en XParfm. ¡Gracias!`)}`
+          `Hola ${cliente} 👋 Te recordamos que tienes un saldo pendiente de ${money(deuda)} en XParfum. ¡Gracias!`)}`
       : null;
     return `<div class="deudor-card">
       <div class="deudor-head"><h4>${esc(cliente)}</h4><span class="monto" style="color:var(--warn);font-weight:500">${money(deuda)}</span></div>
@@ -797,7 +797,7 @@ function renderMoneda() {
 
 async function refrescarBCV(forzar = true) {
   const est = $("moneda-bcv-estado");
-  const cache = JSON.parse(localStorage.getItem("xparfm_bcv") || "null");
+  const cache = JSON.parse(localStorage.getItem("xparfum_bcv") || "null");
   const fresco = cache && Date.now() - cache.t < 24 * 60 * 60 * 1000;
   if (fresco && !forzar) {
     state.moneda.tasaBcv = cache.v;
@@ -811,7 +811,7 @@ async function refrescarBCV(forzar = true) {
     const v = +data.promedio;
     if (!v) throw new Error("sin dato");
     state.moneda.tasaBcv = v;
-    localStorage.setItem("xparfm_bcv", JSON.stringify({ v, t: Date.now() }));
+    localStorage.setItem("xparfum_bcv", JSON.stringify({ v, t: Date.now() }));
     est.textContent = `BCV: ${v}`;
     renderMoneda();
   } catch {

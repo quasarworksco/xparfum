@@ -1,4 +1,4 @@
-# XParfm
+# XParfum
 
 Sitio web de comercio electrónico para venta de perfumes, con catálogo, carrito de pedidos por WhatsApp y panel de administración completo.
 

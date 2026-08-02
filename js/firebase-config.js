@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   XParfm · Configuración
+   XParfum · Configuración
    ═══════════════════════════════════════════════════════════════ */
 
 // ── Firebase (proyecto xparfum-38673) ──
@@ -17,9 +17,10 @@ export const firebaseConfig = {
 export const WHATSAPP_NUMERO = "584146039842";
 
 // ── Cloudinary (fotos de productos desde el admin) ──
-// Crea un upload preset "Unsigned" en Cloudinary y coloca aquí tus datos.
+// Las fotos migradas de la tienda anterior siguen sirviéndose desde el
+// Cloudinary previo; las nuevas subidas van a esta cuenta.
 export const CLOUDINARY_CONFIG = {
-  cloudName: "",      // ej: "xparfm"
-  uploadPreset: "",   // ej: "xparfm_unsigned"
+  cloudName: "xparfum",
+  uploadPreset: "jtdqewim",
   folder: "perfumes",
 };
