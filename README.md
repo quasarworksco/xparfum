@@ -1,4 +1,4 @@
-# Ziba Perfumes
+# XParfm
 
 Sitio web de comercio electrónico para venta de perfumes, con catálogo de 260 fragancias de 46 casas.
 
@@ -39,17 +39,17 @@ Panel protegido con Firebase Authentication desde el que se gestiona todo el neg
 
 ### Acceso al panel
 
-El ingreso es con **usuario y contraseña** (usuario `almariaperfumes`). Internamente el usuario se convierte en el correo `almariaperfumes@almariaperfumes.com` de Firebase Authentication.
+El ingreso es con **usuario y contraseña** (usuario `xparfm`). Internamente el usuario se convierte en el correo `xparfm@xparfm.com` de Firebase Authentication.
 
 ### Configuración inicial (una sola vez)
 
-1. **Habilitar el acceso**: en [Firebase Console → Authentication](https://console.firebase.google.com/project/almariaperfumes/authentication/providers), habilita el proveedor **Correo electrónico/contraseña** y en la pestaña *Users* crea el usuario:
-   - Correo: `almariaperfumes@almariaperfumes.com`
+1. **Habilitar el acceso**: en [Firebase Console → Authentication](https://console.firebase.google.com/project/xparfum-38673/authentication/providers), habilita el proveedor **Correo electrónico/contraseña** y en la pestaña *Users* crea el usuario:
+   - Correo: `xparfm@xparfm.com`
    - Contraseña: la que usarás para entrar al panel
 
    Luego, en **Authentication → Settings → User actions**, desactiva **“Enable create (sign-up)”** para que nadie más pueda crearse una cuenta.
 
-2. **Publicar reglas de Firestore** en [Firestore → Reglas](https://console.firebase.google.com/project/almariaperfumes/firestore/rules):
+2. **Publicar reglas de Firestore** en [Firestore → Reglas](https://console.firebase.google.com/project/xparfum-38673/firestore/rules):
 
    ```
    rules_version = '2';
