@@ -320,3 +320,6 @@ section { padding: 4.2rem 0; }
     transition-duration: 0.01ms !important;
   }
 }
+
+.btn { transition: transform 0.12s ease, filter 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
+.btn:active { transform: scale(0.95); filter: brightness(1.12); }

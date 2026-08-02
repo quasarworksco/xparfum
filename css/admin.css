@@ -399,3 +399,35 @@ img { max-width: 100%; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════ Feedback al presionar ═══════ */
+button, .btn, .accion-btn, .nav-item {
+  transition: transform 0.12s ease, filter 0.15s ease,
+              background-color 0.2s ease, border-color 0.2s ease,
+              color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+button:active, .btn:active, .accion-btn:active { transform: scale(0.94); filter: brightness(1.18); }
+.nav-item:active { transform: translateX(2px) scale(0.98); }
+button:disabled { opacity: 0.55; cursor: wait; transform: none; }
+
+/* ═══════ Banner de estado de carga ═══════ */
+.estado-carga {
+  display: flex; align-items: center; gap: 0.7rem;
+  margin-bottom: 1.1rem; padding: 0.75rem 1.1rem;
+  background: rgba(38, 29, 18, 0.7);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-brd); border-radius: var(--radius-sm);
+  font-size: 0.88rem; color: var(--muted);
+  animation: secIn 0.3s ease both;
+}
+.estado-carga.error {
+  border-color: rgba(224, 122, 95, 0.45); color: var(--danger, #e07a5f);
+  flex-wrap: wrap;
+}
+.spinner {
+  width: 15px; height: 15px; flex: none;
+  border: 2px solid var(--line); border-top-color: var(--gold);
+  border-radius: 50%; animation: girar 0.8s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }

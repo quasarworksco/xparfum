@@ -4,8 +4,8 @@
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=9";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=9";
+import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=10";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=10";
 
 /* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
@@ -23,7 +23,12 @@ try {
   ({ collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc,
      deleteDoc, serverTimestamp, query, orderBy, limit } = fs);
   const app = initializeApp(firebaseConfig);
-  db = fs.getFirestore(app);
+  // Auto long-polling: evita que la conexión se cuelgue en redes con
+  // proxys o ISP que bloquean los streams del canal en tiempo real.
+  db = fs.initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+    useFetchStreams: false,
+  });
   firebaseOK = true;
 } catch (e) {
   console.warn("Firebase no disponible; el panel funciona sin guardar.", e);
@@ -106,12 +111,45 @@ document.querySelectorAll(".nav-item[data-sec]").forEach((btn) =>
 );
 
 /* ═══════ CARGA DE DATOS ═══════ */
+function estadoCarga(msg, tipo = "") {
+  let el = document.getElementById("estado-carga");
+  if (!msg) { el?.remove(); return; }
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "estado-carga";
+    document.querySelector(".main").prepend(el);
+  }
+  el.className = `estado-carga ${tipo}`;
+  el.innerHTML = tipo === "error"
+    ? `${esc(msg)} <button type="button" class="btn btn-ghost" id="btn-reintentar">Reintentar</button>`
+    : `<span class="spinner"></span> ${esc(msg)}`;
+  document.getElementById("btn-reintentar")?.addEventListener("click", () => cargarTodo());
+}
+
 async function cargarTodo() {
-  if (!firebaseOK) { renderTodo(); return; }
-  await Promise.all([
-    cargarProductos(), cargarPedidos(), cargarVentas(),
-    cargarProveedores(), cargarMovimientos(), cargarMoneda(),
-  ]);
+  if (!firebaseOK) {
+    estadoCarga("Sin conexión con Firebase: los datos no se pueden cargar.", "error");
+    renderTodo();
+    return;
+  }
+  estadoCarga("Cargando datos de Firestore…");
+  const timeout = new Promise((_, rej) =>
+    setTimeout(() => rej(new Error("timeout")), 20000));
+  try {
+    await Promise.race([
+      Promise.all([
+        cargarProductos(), cargarPedidos(), cargarVentas(),
+        cargarProveedores(), cargarMovimientos(), cargarMoneda(),
+      ]),
+      timeout,
+    ]);
+    estadoCarga(null);
+  } catch (e) {
+    estadoCarga(
+      e.message === "timeout"
+        ? "Firestore no responde (20 s). Puede ser tu red o un bloqueo del proveedor de internet."
+        : "Error al cargar: " + (e.message || e), "error");
+  }
   renderTodo();
   refrescarBCV(false);
 }
@@ -219,7 +257,7 @@ function renderProductos() {
   const q = ($("prod-search").value || "").toLowerCase();
   const list = state.productos
     .filter((p) => !q || `${p.casa} ${p.nombre}`.toLowerCase().includes(q))
-    .sort((a, b) => a.casa.localeCompare(b.casa, "es") || a.nombre.localeCompare(b.nombre, "es"));
+    .sort((a, b) => (a.casa || "").localeCompare(b.casa || "", "es") || (a.nombre || "").localeCompare(b.nombre || "", "es"));
 
   $("prod-empty").hidden = state.productos.length > 0;
   $("prod-table").querySelector("tbody").innerHTML = list.map((p) => {
@@ -527,7 +565,7 @@ $("venta-nueva").addEventListener("click", modalVenta);
 
 function modalVenta() {
   const opciones = state.productos
-    .slice().sort((a, b) => a.casa.localeCompare(b.casa, "es") || a.nombre.localeCompare(b.nombre, "es"))
+    .slice().sort((a, b) => (a.casa || "").localeCompare(b.casa || "", "es") || (a.nombre || "").localeCompare(b.nombre || "", "es"))
     .map((p) => `<option value="${p.id}">${esc(p.casa)} — ${esc(p.nombre)} (stock ${p.stock ?? 0})</option>`)
     .join("");
 

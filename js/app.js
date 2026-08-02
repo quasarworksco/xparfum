@@ -3,8 +3,8 @@
    Búsqueda · filtros · mayor/detal · destacados · carrito · pedidos
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, WHATSAPP_NUMERO } from "./firebase-config.js?v=9";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=9";
+import { firebaseConfig, WHATSAPP_NUMERO } from "./firebase-config.js?v=10";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=10";
 
 /* ── Firebase (carga perezosa; la tienda funciona sin él) ── */
 let db = null;
@@ -13,11 +13,15 @@ async function initFirebase() {
     const { initializeApp } = await import(
       "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
     );
-    const { getFirestore } = await import(
+    const fs = await import(
       "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
     );
     const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    // Auto long-polling: evita cuelgues en redes con proxys intermedios
+    db = fs.initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      useFetchStreams: false,
+    });
   } catch (e) {
     console.warn("Firebase no disponible, se usa el catálogo local.", e);
   }
@@ -60,7 +64,10 @@ async function cargarCatalogo() {
       const { collection, getDocs } = await import(
         "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
       );
-      const snap = await getDocs(collection(db, "perfumes"));
+      const snap = await Promise.race([
+        getDocs(collection(db, "perfumes")),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+      ]);
       if (!snap.empty) {
         state.productos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         return;
@@ -99,10 +106,10 @@ function productosFiltrados() {
   });
   const val = (p) => precioActivo(p).precio;
   switch (state.orden) {
-    case "nombre":      list.sort((a, b) => a.nombre.localeCompare(b.nombre, "es")); break;
+    case "nombre":      list.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es")); break;
     case "precio-asc":  list.sort((a, b) => val(a) - val(b)); break;
     case "precio-desc": list.sort((a, b) => val(b) - val(a)); break;
-    default:            list.sort((a, b) => a.casa.localeCompare(b.casa, "es") || a.nombre.localeCompare(b.nombre, "es"));
+    default:            list.sort((a, b) => (a.casa || "").localeCompare(b.casa || "", "es") || (a.nombre || "").localeCompare(b.nombre || "", "es"));
   }
   return list;
 }
@@ -110,9 +117,6 @@ function productosFiltrados() {
 /* ── Render: tarjeta ── */
 function cardHTML(p) {
   const { precio, antes } = precioActivo(p);
-  const alt = state.modo === "mayor"
-    ? `Detal: ${money(precioDetalDe(p))}`
-    : `Mayor: ${money(p.precioMayor)}`;
   const sinStock = p.stock != null && +p.stock <= 0;
   const inicial = (p.nombre || "?").trim().charAt(0).toUpperCase();
   const bsLinea =
@@ -136,10 +140,21 @@ function cardHTML(p) {
       <span class="card-casa">${p.casa}</span>
       <h3 class="card-nombre">${p.nombre}</h3>
       <div class="card-precios">
-        <span class="precio-activo">${money(precio)}</span>
-        ${antes ? `<span class="precio-tachado">${money(antes)}</span>` : ""}
-        <span class="precio-alt">${alt}</span>
+        <div class="precio-principal">
+          <span class="precio-activo">${money(precio)}</span>
+          ${antes ? `<span class="precio-tachado">${money(antes)}</span>` : ""}
+        </div>
         ${bsLinea}
+        <div class="precio-duo">
+          <div class="duo-cell ${state.modo === "mayor" ? "is-active" : ""}">
+            <span class="duo-label">Al mayor</span>
+            <span class="duo-valor">${money(p.precioMayor)}</span>
+          </div>
+          <div class="duo-cell ${state.modo === "detal" ? "is-active" : ""}">
+            <span class="duo-label">Al detal</span>
+            <span class="duo-valor">${money(precioDetalDe(p))}</span>
+          </div>
+        </div>
       </div>
       ${
         sinStock

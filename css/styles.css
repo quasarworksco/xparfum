@@ -319,21 +319,51 @@ input, select { font: inherit; color: inherit; }
   letter-spacing: 0.08em; text-transform: uppercase;
   padding: 0.28rem 0.65rem; border-radius: 999px;
 }
-.card-body { padding: 0.95rem 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.22rem; flex: 1; }
+.card-body { padding: 1rem 1.05rem 1.15rem; display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
 .card-casa {
   font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--gold); font-weight: 500;
 }
 .card-nombre {
-  font-family: var(--font-serif); font-size: 1.22rem; font-weight: 600;
-  color: var(--cream); line-height: 1.2;
+  font-family: var(--font-serif); font-size: 1.14rem; font-weight: 600;
+  color: var(--cream); line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; min-height: calc(1.14rem * 1.25 * 2);
 }
-.card-precios { margin-top: auto; padding-top: 0.65rem; display: flex; align-items: baseline; gap: 0.55rem; flex-wrap: wrap; }
-.precio-activo { font-size: 1.28rem; font-weight: 500; color: var(--gold-2); }
+.card-precios {
+  margin-top: auto; padding-top: 0.7rem;
+  display: flex; flex-direction: column; gap: 0.55rem;
+  border-top: 1px solid var(--line-soft);
+}
+.precio-principal { display: flex; align-items: baseline; gap: 0.55rem; }
+.precio-activo {
+  font-family: var(--font-serif); font-size: 1.55rem; font-weight: 600;
+  color: var(--gold-2); letter-spacing: 0.01em; line-height: 1;
+}
 .precio-tachado { font-size: 0.88rem; color: var(--muted); text-decoration: line-through; opacity: 0.7; }
-.precio-alt { font-size: 0.78rem; color: var(--muted); width: 100%; }
-.precio-bs { font-size: 0.78rem; color: var(--muted); width: 100%; }
+.precio-bs { font-size: 0.78rem; color: var(--muted); }
 .precio-bs strong { color: var(--cream); font-weight: 500; }
+
+/* Mayor / Detal siempre visibles, el modo activo resaltado */
+.precio-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+.duo-cell {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  padding: 0.42rem 0.6rem; border-radius: var(--radius-sm);
+  background: rgba(20, 14, 9, 0.35);
+  border: 1px solid var(--line-soft);
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.duo-cell.is-active {
+  border-color: rgba(212, 173, 84, 0.45);
+  background: rgba(210, 168, 79, 0.10);
+}
+.duo-label {
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted); white-space: nowrap;
+}
+.duo-cell.is-active .duo-label { color: var(--gold); }
+.duo-valor { font-size: 0.98rem; font-weight: 500; color: var(--cream); }
+.duo-cell.is-active .duo-valor { color: var(--gold-2); font-weight: 600; }
 .card-add {
   margin-top: 0.8rem; width: 100%; padding: 0.6rem;
   border-radius: var(--radius-sm); border: 1px solid var(--line);
@@ -528,3 +558,21 @@ input, select { font: inherit; color: inherit; }
   }
   html { scroll-behavior: auto; }
 }
+
+/* ═══════ Feedback al presionar (ningún botón parece muerto) ═══════ */
+button, .btn, .card-add, .price-toggle-btn, .page-btn, .chip,
+.cart-btn, .cart-clear, .btn-reset, .cart-fab, .cart-item-remove,
+.qty-btn, .search-clear {
+  transition: transform 0.12s ease, filter 0.15s ease,
+              background-color 0.2s ease, border-color 0.2s ease,
+              box-shadow 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+button:active, .btn:active, .card-add:active, .price-toggle-btn:active,
+.page-btn:active, .chip:active, .cart-btn:active, .cart-clear:active,
+.btn-reset:active, .cart-item-remove:active, .qty-btn:active {
+  transform: scale(0.94);
+  filter: brightness(1.15);
+}
+.cart-fab:active { transform: scale(0.9); }
+button:disabled { opacity: 0.55; cursor: wait; transform: none; }
