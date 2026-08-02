@@ -4,8 +4,8 @@
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=12";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=12";
+import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=13";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=13";
 
 /* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
@@ -172,26 +172,31 @@ async function cargarProductos() {
       ". Revisa que las reglas estén publicadas.", "error");
   }
 }
-const cargarPedidos = () =>
-  getDocs(query(collection(db, "pedidos"), orderBy("creado", "desc")))
+function cargarPedidos() {
+  return getDocs(query(collection(db, "pedidos"), orderBy("creado", "desc")))
     .then((s) => (state.pedidos = s.docs.map((d) => ({ id: d.id, ...d.data() }))))
     .catch(() => (state.pedidos = []));
-const cargarVentas = () =>
-  getDocs(query(collection(db, "ventas"), orderBy("fecha", "desc")))
+}
+function cargarVentas() {
+  return getDocs(query(collection(db, "ventas"), orderBy("fecha", "desc")))
     .then((s) => (state.ventas = s.docs.map((d) => ({ id: d.id, ...d.data() }))))
     .catch(() => (state.ventas = []));
-const cargarProveedores = () =>
-  getDocs(collection(db, "proveedores"))
+}
+function cargarProveedores() {
+  return getDocs(collection(db, "proveedores"))
     .then((s) => (state.proveedores = s.docs.map((d) => ({ id: d.id, ...d.data() }))))
     .catch(() => (state.proveedores = []));
-const cargarMovimientos = () =>
-  getDocs(query(collection(db, "movimientos"), orderBy("fecha", "desc"), limit(25)))
+}
+function cargarMovimientos() {
+  return getDocs(query(collection(db, "movimientos"), orderBy("fecha", "desc"), limit(25)))
     .then((s) => (state.movimientos = s.docs.map((d) => ({ id: d.id, ...d.data() }))))
     .catch(() => (state.movimientos = []));
-const cargarMoneda = () =>
-  getDoc(doc(db, "config", "moneda"))
+}
+function cargarMoneda() {
+  return getDoc(doc(db, "config", "moneda"))
     .then((s) => { if (s.exists()) state.moneda = { ...state.moneda, ...s.data() }; })
     .catch(() => {});
+}
 
 function renderTodo() {
   renderDashboard(); renderProductos(); renderPedidos();
