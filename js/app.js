@@ -117,7 +117,6 @@ function productosFiltrados() {
 /* ── Render: tarjeta ── */
 function cardHTML(p) {
   const { precio, antes } = precioActivo(p);
-  const sinStock = p.stock != null && +p.stock <= 0;
   const inicial = (p.nombre || "?").trim().charAt(0).toUpperCase();
   const bsLinea =
     state.tasas.propia
@@ -156,14 +155,10 @@ function cardHTML(p) {
           </div>
         </div>
       </div>
-      ${
-        sinStock
-          ? `<span class="card-agotado">Agotado</span>`
-          : `<button type="button" class="card-add" data-add="${p.id}">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-               Agregar al pedido
-             </button>`
-      }
+      <button type="button" class="card-add" data-add="${p.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar al pedido
+      </button>
     </div>
   </article>`;
 }
