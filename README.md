@@ -39,12 +39,12 @@ Panel protegido con Firebase Authentication desde el que se gestiona todo el neg
 
 ### Acceso al panel
 
-El ingreso es con **usuario y contraseña** (usuario `xparfm`). Internamente el usuario se convierte en el correo `xparfm@xparfm.com` de Firebase Authentication.
+El ingreso es con **usuario y contraseña** (usuario `admin`). Internamente el usuario se convierte en el correo `admin@admin.com` de Firebase Authentication.
 
 ### Configuración inicial (una sola vez)
 
 1. **Habilitar el acceso**: en [Firebase Console → Authentication](https://console.firebase.google.com/project/xparfum-38673/authentication/providers), habilita el proveedor **Correo electrónico/contraseña** y en la pestaña *Users* crea el usuario:
-   - Correo: `xparfm@xparfm.com`
+   - Correo: `admin@admin.com`
    - Contraseña: la que usarás para entrar al panel
 
    Luego, en **Authentication → Settings → User actions**, desactiva **“Enable create (sign-up)”** para que nadie más pueda crearse una cuenta.
