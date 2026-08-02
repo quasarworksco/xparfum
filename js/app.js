@@ -265,7 +265,7 @@ function renderCarrito() {
         <button type="button" data-qty="1" data-i="${i}" aria-label="Más">+</button>
       </div>
       <span class="cart-item-total">${money(it.precio * it.cantidad)}</span>
-      <button type="button" class="cart-item-remove" data-remove="${i}" aria-label="Quitar">✕</button>
+      <button type="button" class="cart-item-remove" data-remove="${i}" aria-label="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>`
     )
     .join("");
@@ -286,7 +286,7 @@ function textoPedido(nombre, telefono) {
     (it) => `• ${it.cantidad} × ${it.casa} — ${it.nombre} (${money(it.precio)} c/u) = ${money(it.precio * it.cantidad)}`
   );
   return [
-    `🛍️ *Pedido XParfum*`,
+    `*Pedido XParfum*`,
     ``,
     `Cliente: ${nombre}`,
     `Teléfono: ${telefono}`,

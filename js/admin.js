@@ -205,7 +205,7 @@ function renderDashboard() {
     <div class="linea-item">
       <div><div class="titulo">${esc(p.nombre)}</div><div class="detalle">${esc(p.casa)}</div></div>
       <span class="stock-pill ${(+p.stock || 0) === 0 ? "cero" : "bajo"}">${p.stock ?? 0}</span>
-    </div>`).join("") || `<p class="empty-note">Todo el stock está sano. ✨</p>`;
+    </div>`).join("") || `<p class="empty-note">Todo el stock está sano.</p>`;
 }
 
 /* ═══════ PRODUCTOS ═══════ */
@@ -224,7 +224,7 @@ function renderProductos() {
     const st = +p.stock || 0;
     return `<tr>
       <td class="casa">${esc(p.casa)}</td>
-      <td>${esc(p.nombre)}${p.destacado ? " ⭐" : ""}</td>
+      <td>${esc(p.nombre)}${p.destacado ? ' <svg class="icono-star" viewBox="0 0 24 24" fill="currentColor" aria-label="Destacado"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : ""}</td>
       <td class="num">${p.costo != null ? money(p.costo) : "—"}</td>
       <td class="num">${money(p.precioMayor)}</td>
       <td class="num">${money(precioDetalDe(p))}</td>
@@ -356,7 +356,7 @@ function subirFoto() {
       if (!data.secure_url) throw new Error(data.error?.message || "sin URL");
       const url = data.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_800/");
       document.querySelector('#form-prod [name="imagen"]').value = url;
-      $("foto-estado").textContent = "Foto lista ✓";
+      $("foto-estado").textContent = "Foto lista";
     } catch (e) {
       $("foto-estado").textContent = "Error al subir: " + e.message;
     }
@@ -545,7 +545,7 @@ function modalVenta() {
       <select class="input l-prod"><option value="">— Producto —</option>${opciones}</select>
       <input class="input l-cant" type="number" min="1" value="1" title="Cantidad" />
       <input class="input l-precio" type="number" step="0.01" min="0" title="Precio unit." />
-      <button type="button" class="accion-btn rojo l-quitar" title="Quitar">✕</button>`;
+      <button type="button" class="accion-btn rojo l-quitar" title="Quitar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
     lineas.appendChild(div);
   };
   nuevaLinea();
@@ -669,7 +669,7 @@ function renderDeudores() {
        <button class="btn btn-ghost" data-abono="${v.id}" style="padding:.3rem .8rem;font-size:.78rem">Abonar</button></div>`).join("");
     const wa = d.telefono
       ? `https://wa.me/${String(d.telefono).replace(/\D/g, "")}?text=${encodeURIComponent(
-          `Hola ${cliente} 👋 Te recordamos que tienes un saldo pendiente de ${money(deuda)} en XParfum. ¡Gracias!`)}`
+          `Hola ${cliente}. Te recordamos que tienes un saldo pendiente de ${money(deuda)} en XParfum. Gracias.`)}`
       : null;
     return `<div class="deudor-card">
       <div class="deudor-head"><h4>${esc(cliente)}</h4><span class="monto" style="color:var(--warn);font-weight:500">${money(deuda)}</span></div>
