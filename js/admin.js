@@ -4,8 +4,8 @@
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=13";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=13";
+import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=14";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=14";
 
 /* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
@@ -38,6 +38,7 @@ try {
 const state = {
   productos: [],   // perfumes + costo fusionado
   costos: {},      // id → {costo, proveedorId}
+  prodPagina: 1,   // página del listado de productos
   pedidos: [],
   ventas: [],
   proveedores: [],
@@ -258,16 +259,69 @@ function precioDetalDe(p) {
   return p.precioDetal != null && p.precioDetal !== "" ? +p.precioDetal : +p.precioMayor + DETAL_MARKUP;
 }
 
+const PROD_POR_PAGINA = 40;
+
+/* Miniatura: reutiliza la transformación de Cloudinary en tamaño chico */
+function miniatura(url) {
+  if (!url) return "";
+  return url.replace(/\/f_auto,q_auto,w_\d+\//, "/f_auto,q_auto,w_120/");
+}
+
+function montarFiltroCasas() {
+  const sel = $("prod-casa");
+  const actual = sel.value;
+  const casas = [...new Set(state.productos.map((p) => p.casa).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+  sel.innerHTML = `<option value="">Todas las casas</option>` +
+    casas.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if (casas.includes(actual)) sel.value = actual;
+}
+
+function productosFiltrados() {
+  const q = ($("prod-search").value || "").toLowerCase().trim();
+  const casa = $("prod-casa").value;
+  const orden = $("prod-orden").value;
+  const list = state.productos.filter((p) =>
+    (!casa || p.casa === casa) &&
+    (!q || `${p.casa} ${p.nombre}`.toLowerCase().includes(q)));
+
+  switch (orden) {
+    case "nombre":
+      list.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es")); break;
+    case "stock-asc":
+      list.sort((a, b) => (+a.stock || 0) - (+b.stock || 0)); break;
+    case "precio-desc":
+      list.sort((a, b) => (+b.precioMayor || 0) - (+a.precioMayor || 0)); break;
+    default:
+      list.sort((a, b) => (a.casa || "").localeCompare(b.casa || "", "es") ||
+                          (a.nombre || "").localeCompare(b.nombre || "", "es"));
+  }
+  return list;
+}
+
 function renderProductos() {
-  const q = ($("prod-search").value || "").toLowerCase();
-  const list = state.productos
-    .filter((p) => !q || `${p.casa} ${p.nombre}`.toLowerCase().includes(q))
-    .sort((a, b) => (a.casa || "").localeCompare(b.casa || "", "es") || (a.nombre || "").localeCompare(b.nombre || "", "es"));
+  montarFiltroCasas();
+  const todos = productosFiltrados();
+  const paginas = Math.max(1, Math.ceil(todos.length / PROD_POR_PAGINA));
+  state.prodPagina = Math.min(Math.max(1, state.prodPagina || 1), paginas);
+  const desde = (state.prodPagina - 1) * PROD_POR_PAGINA;
+  const list = todos.slice(desde, desde + PROD_POR_PAGINA);
+
+  $("prod-conteo").textContent = todos.length
+    ? `${todos.length} producto${todos.length !== 1 ? "s" : ""}` +
+      (paginas > 1 ? ` · mostrando ${desde + 1}–${desde + list.length}` : "")
+    : "Sin coincidencias";
 
   $("prod-empty").hidden = state.productos.length > 0;
   $("prod-table").querySelector("tbody").innerHTML = list.map((p) => {
     const st = +p.stock || 0;
-    return `<tr>
+    return `<tr data-row="${p.id}" title="Clic para editar">
+      <td class="col-foto">
+        <span class="thumb thumb-vacio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          ${p.imagen ? `<img src="${esc(miniatura(p.imagen))}" alt="" loading="lazy" onerror="this.remove()" />` : ""}
+        </span>
+      </td>
       <td class="casa">${esc(p.casa)}</td>
       <td>${esc(p.nombre)}${p.destacado ? ' <svg class="icono-star" viewBox="0 0 24 24" fill="currentColor" aria-label="Destacado"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : ""}</td>
       <td class="num">${p.costo != null ? money(p.costo) : "—"}</td>
@@ -285,6 +339,8 @@ function renderProductos() {
       </td></tr>`;
   }).join("");
 
+  renderProdPager(paginas);
+
   $("prod-movimientos").innerHTML = state.movimientos.slice(0, 10).map((m) => `
     <div class="linea-item">
       <div><div class="titulo">${esc(m.producto)}</div>
@@ -293,7 +349,36 @@ function renderProductos() {
     </div>`).join("") || `<p class="empty-note">Sin movimientos registrados.</p>`;
 }
 
-$("prod-search").addEventListener("input", renderProductos);
+function renderProdPager(paginas) {
+  const nav = $("prod-pager");
+  if (paginas <= 1) { nav.hidden = true; nav.innerHTML = ""; return; }
+  nav.hidden = false;
+  const act = state.prodPagina;
+  const cerca = new Set([1, paginas, act - 1, act, act + 1]);
+  let html = `<button type="button" class="pager-btn" data-pag="${act - 1}" ${act === 1 ? "disabled" : ""} aria-label="Anterior">‹</button>`;
+  let ultima = 0;
+  for (let i = 1; i <= paginas; i++) {
+    if (!cerca.has(i)) continue;
+    if (i - ultima > 1) html += `<span class="pager-info">…</span>`;
+    html += `<button type="button" class="pager-btn ${i === act ? "is-active" : ""}" data-pag="${i}">${i}</button>`;
+    ultima = i;
+  }
+  html += `<button type="button" class="pager-btn" data-pag="${act + 1}" ${act === paginas ? "disabled" : ""} aria-label="Siguiente">›</button>`;
+  nav.innerHTML = html;
+}
+
+/* Al filtrar u ordenar se vuelve a la primera página */
+function refiltrarProductos() { state.prodPagina = 1; renderProductos(); }
+$("prod-search").addEventListener("input", refiltrarProductos);
+$("prod-casa").addEventListener("change", refiltrarProductos);
+$("prod-orden").addEventListener("change", refiltrarProductos);
+$("prod-pager").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pag]");
+  if (!b || b.disabled) return;
+  state.prodPagina = +b.dataset.pag;
+  renderProductos();
+  $("prod-table").closest(".table-wrap").scrollTo({ top: 0, behavior: "smooth" });
+});
 $("prod-nuevo").addEventListener("click", () => modalProducto());
 $("prod-seed").addEventListener("click", importarCatalogo);
 
@@ -351,11 +436,15 @@ function modalProducto(p = null) {
           <input type="checkbox" name="destacado" style="width:auto" ${p?.destacado ? "checked" : ""} />
           <span style="margin:0">Mostrar en Destacados</span></label>
       </div>
-      ${CLOUDINARY_CONFIG.cloudName ? `
-      <div class="head-actions" style="margin-bottom:.6rem">
-        <button type="button" class="btn btn-ghost" id="btn-foto">Subir foto</button>
+      <div class="foto-fila">
+        <span class="thumb" id="foto-preview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          ${p?.imagen ? `<img src="${esc(miniatura(p.imagen))}" alt="" onerror="this.remove()" />` : ""}
+        </span>
+        ${CLOUDINARY_CONFIG.cloudName
+          ? `<button type="button" class="btn btn-ghost" id="btn-foto">Subir foto</button>` : ""}
         <span class="hint" id="foto-estado"></span>
-      </div>` : ""}
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" data-cerrar>Cancelar</button>
         <button type="submit" class="btn btn-primary">${p ? "Guardar cambios" : "Crear producto"}</button>
@@ -365,6 +454,9 @@ function modalProducto(p = null) {
   if (CLOUDINARY_CONFIG.cloudName) {
     $("btn-foto")?.addEventListener("click", () => subirFoto());
   }
+  // La vista previa sigue lo que se escriba o se suba
+  const campoImg = document.querySelector('#form-prod [name="imagen"]');
+  campoImg.addEventListener("input", () => previewFoto(campoImg.value.trim()));
 
   document.getElementById("form-prod").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -395,6 +487,18 @@ function modalProducto(p = null) {
   });
 }
 
+function previewFoto(url) {
+  const cont = $("foto-preview");
+  if (!cont) return;
+  cont.querySelector("img")?.remove();
+  if (!url) return;
+  const img = document.createElement("img");
+  img.alt = "";
+  img.onerror = () => img.remove();
+  img.src = miniatura(url);
+  cont.appendChild(img);
+}
+
 function subirFoto() {
   const input = document.createElement("input");
   input.type = "file"; input.accept = "image/*";
@@ -414,6 +518,7 @@ function subirFoto() {
       if (!data.secure_url) throw new Error(data.error?.message || "sin URL");
       const url = data.secure_url.replace("/upload/", "/upload/f_auto,q_auto,w_800/");
       document.querySelector('#form-prod [name="imagen"]').value = url;
+      previewFoto(url);
       $("foto-estado").textContent = "Foto lista";
     } catch (e) {
       $("foto-estado").textContent = "Error al subir: " + e.message;
@@ -465,6 +570,12 @@ $("prod-table").addEventListener("click", async (e) => {
   const edit = e.target.closest("[data-edit]");
   const del = e.target.closest("[data-del]");
   const mov = e.target.closest("[data-mov]");
+  // Clic en cualquier parte de la fila (fuera de los botones) = editar
+  const fila = e.target.closest("[data-row]");
+  if (fila && !edit && !del && !mov) {
+    modalProducto(state.productos.find((p) => p.id === fila.dataset.row));
+    return;
+  }
   if (edit) modalProducto(state.productos.find((p) => p.id === edit.dataset.edit));
   if (mov) modalMovimiento(state.productos.find((p) => p.id === mov.dataset.mov));
   if (del) {

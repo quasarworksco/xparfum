@@ -208,7 +208,7 @@ img { max-width: 100%; }
   font-family: var(--font-serif); font-size: 1.28rem; font-weight: 600;
   color: var(--cream); margin-bottom: 0.9rem;
 }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem; align-items: start; }
 
 .stat-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -450,3 +450,126 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--gold); }
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(212, 173, 84, 0.45); }
 ::selection { background: rgba(210, 168, 79, 0.35); color: #fff6e6; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TEMA CLARO DEL ÁREA DE TRABAJO
+   El sidebar y el login siguen oscuros (identidad de marca); el
+   contenido pasa a fondos claros para trabajar cómodo muchas horas.
+   Se redefinen las variables: los componentes hijos se adaptan solos.
+   ═══════════════════════════════════════════════════════════════ */
+.main, .modal {
+  --surface:   #ffffff;
+  --surface-2: #fdfaf4;
+  --glass:     #ffffff;
+  --glass-brd: rgba(72, 54, 32, 0.14);
+  --line:      rgba(72, 54, 32, 0.17);
+  --line-soft: rgba(72, 54, 32, 0.08);
+
+  --gold:      #8a6a1f;
+  --gold-2:    #5c4415;
+  --gold-deep: #a07d34;
+  --cream:     #2b2118;
+  --muted:     #78695a;
+
+  --ok:        #3d7a4d;
+  --warn:      #96690f;
+  --danger:    #b23f2e;
+
+  --shadow:    0 10px 30px rgba(58, 42, 24, 0.13);
+}
+.main {
+  background: #f4efe6;
+  color: var(--cream);
+  border-radius: 18px 0 0 0;
+}
+.main .panel, .main .stat, .main .pedido-card, .main .deudor-card {
+  background: var(--surface);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  border: 1px solid var(--glass-brd);
+  box-shadow: 0 1px 2px rgba(58, 42, 24, 0.05), 0 6px 18px -10px rgba(58, 42, 24, 0.16);
+}
+.main .stat:hover {
+  border-color: rgba(138, 106, 31, 0.42);
+  box-shadow: 0 2px 6px rgba(58, 42, 24, 0.08), 0 14px 26px -12px rgba(58, 42, 24, 0.28);
+}
+.main .field input, .main .field select, .main .input,
+.modal .field input, .modal .field select, .modal .field textarea, .modal .input {
+  background: #fff; border-color: var(--glass-brd); color: var(--cream);
+}
+.main .field select option, .modal .field select option { background: #fff; }
+.main .table tr:hover td { background: #faf5ea; }
+.main .accion-btn:hover { background: #f2ebdc; color: var(--gold-2); }
+.main .btn-ghost { border-color: var(--line); color: var(--gold-2); }
+.main .btn-ghost:hover { background: #f6efe1; border-color: var(--gold); }
+.main .estado-carga {
+  background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none;
+  color: var(--muted); box-shadow: 0 1px 2px rgba(58, 42, 24, 0.05);
+}
+.main .spinner { border-color: var(--line-soft); border-top-color: var(--gold); }
+.modal { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.modal-overlay { background: rgba(38, 27, 15, 0.45); }
+.main :focus-visible, .modal :focus-visible { outline-color: rgba(138, 106, 31, 0.6); }
+.main ::selection, .modal ::selection { background: rgba(138, 106, 31, 0.22); color: #241a10; }
+.main *, .modal * { scrollbar-color: rgba(72, 54, 32, 0.28) transparent; }
+.main ::-webkit-scrollbar-thumb, .modal ::-webkit-scrollbar-thumb {
+  background: rgba(72, 54, 32, 0.26);
+}
+
+/* ═══════ Tabla de productos: miniaturas y manejo ═══════ */
+/* La miniatura va superpuesta sobre el icono; si la foto falla, se
+   elimina sola y queda el icono de fondo. */
+.thumb {
+  position: relative; width: 46px; height: 46px; border-radius: 9px;
+  background: #f0e8d9; display: grid; place-items: center; overflow: hidden;
+  border: 1px solid var(--line-soft); flex: none;
+}
+.thumb svg { width: 20px; height: 20px; color: var(--gold); opacity: 0.45; }
+.thumb img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.table td.col-foto { width: 46px; padding-right: 0; }
+
+/* Encabezado fijo al desplazar tablas largas */
+.main .table-wrap { max-height: 68vh; overflow: auto; }
+.main .table thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+
+/* Fila clicable para editar */
+.main .table tbody tr { cursor: pointer; }
+.main .table .nombre-prod { font-weight: 500; }
+
+/* Fila de foto dentro del modal de producto */
+.foto-fila { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.7rem; }
+
+/* Barra de filtros del listado */
+.filtros-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.filtros-bar .input, .filtros-bar select { width: auto; min-width: 190px; }
+.filtros-conteo { margin-left: auto; color: var(--muted); font-size: 0.84rem; }
+
+/* Paginación del listado */
+.pager { display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.9rem 0 0.2rem; flex-wrap: wrap; }
+.pager-btn {
+  min-width: 34px; height: 34px; padding: 0 0.6rem; border-radius: 8px;
+  border: 1px solid var(--line); color: var(--muted); font-size: 0.86rem;
+  display: inline-grid; place-items: center; background: #fff;
+}
+.pager-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold-2); }
+.pager-btn.is-active {
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+  border-color: transparent; color: #fff; font-weight: 600;
+}
+.pager-btn:disabled { opacity: 0.4; cursor: default; }
+.pager-info { color: var(--muted); font-size: 0.84rem; margin-left: 0.4rem; }
+
+@media (max-width: 880px) {
+  .main { border-radius: 0; }
+  .filtros-conteo { margin-left: 0; width: 100%; }
+  .filtros-bar .input, .filtros-bar select { min-width: 0; flex: 1; }
+}

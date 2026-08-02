@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/admin.css?v=13" />
+  <link rel="stylesheet" href="css/admin.css?v=14" />
 </head>
 <body>
 
@@ -109,10 +109,23 @@
           </div>
         </header>
         <div class="panel">
+          <div class="filtros-bar">
+            <select class="input" id="prod-casa" aria-label="Filtrar por casa">
+              <option value="">Todas las casas</option>
+            </select>
+            <select class="input" id="prod-orden" aria-label="Ordenar productos">
+              <option value="casa">Casa (A–Z)</option>
+              <option value="nombre">Nombre (A–Z)</option>
+              <option value="stock-asc">Stock: menor primero</option>
+              <option value="precio-desc">Precio: mayor primero</option>
+            </select>
+            <p class="filtros-conteo" id="prod-conteo"></p>
+          </div>
           <div class="table-wrap">
             <table class="table" id="prod-table">
               <thead>
                 <tr>
+                  <th class="col-foto"></th>
                   <th>Casa</th><th>Nombre</th>
                   <th class="num">Mi costo</th><th class="num">Mayor</th><th class="num">Detal</th><th class="num">Oferta</th>
                   <th class="num">Stock</th><th class="acciones">Acciones</th>
@@ -121,6 +134,7 @@
               <tbody></tbody>
             </table>
           </div>
+          <nav class="pager" id="prod-pager" aria-label="Paginación de productos" hidden></nav>
           <div class="empty-note" id="prod-empty" hidden>
             <p>No hay productos registrados en Firestore.</p>
             <button class="btn btn-primary" id="prod-seed">
@@ -251,6 +265,6 @@
   <!-- ══════════ TOASTS ══════════ -->
   <div class="toasts" id="toasts"></div>
 
-  <script type="module" src="js/admin.js?v=13"></script>
+  <script type="module" src="js/admin.js?v=14"></script>
 </body>
 </html>
