@@ -323,3 +323,13 @@ section { padding: 4.2rem 0; }
 
 .btn { transition: transform 0.12s ease, filter 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease; }
 .btn:active { transform: scale(0.95); filter: brightness(1.12); }
+
+:focus-visible { outline: 2px solid rgba(212, 173, 84, 0.55); outline-offset: 2px; border-radius: 4px; }
+* { scrollbar-width: thin; scrollbar-color: rgba(212, 173, 84, 0.28) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 173, 84, 0.25); border-radius: 99px;
+  border: 2px solid transparent; background-clip: content-box;
+}
+::selection { background: rgba(210, 168, 79, 0.35); color: #fff6e6; }
