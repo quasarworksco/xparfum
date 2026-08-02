@@ -3,8 +3,8 @@
    Búsqueda · filtros · mayor/detal · destacados · carrito · pedidos
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, WHATSAPP_NUMERO } from "./firebase-config.js";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js";
+import { firebaseConfig, WHATSAPP_NUMERO } from "./firebase-config.js?v=9";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=9";
 
 /* ── Firebase (carga perezosa; la tienda funciona sin él) ── */
 let db = null;

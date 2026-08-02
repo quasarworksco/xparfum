@@ -4,8 +4,8 @@
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js";
+import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=9";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=9";
 
 /* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
@@ -130,6 +130,8 @@ async function cargarProductos() {
   } catch (e) {
     console.warn(e);
     state.productos = [];
+    toast("No se pudieron leer los productos de Firestore: " + (e.message || e) +
+      ". Revisa que las reglas estén publicadas.", "error");
   }
 }
 const cargarPedidos = () =>
@@ -253,13 +255,26 @@ $("prod-nuevo").addEventListener("click", () => modalProducto());
 $("prod-seed").addEventListener("click", importarCatalogo);
 
 async function importarCatalogo() {
-  if (!confirm(`¿Importar ${CATALOGO_LOCAL.length} productos del catálogo local a Firestore?`)) return;
+  if (!firebaseOK) { toast("Sin conexión con Firebase: no se puede importar.", "error"); return; }
+  // Nunca duplica: solo importa los productos que aún no existen (por casa+nombre)
+  await cargarProductos();
+  const existentes = new Set(state.productos.map((p) => `${p.casa}|${p.nombre}`.toLowerCase()));
+  const nuevos = CATALOGO_LOCAL.filter((p) => !existentes.has(`${p.casa}|${p.nombre}`.toLowerCase()));
+  if (nuevos.length === 0) {
+    toast(`El catálogo ya está completo en Firestore (${state.productos.length} productos). Nada que importar.`, "ok");
+    renderTodo();
+    return;
+  }
+  if (!confirm(`¿Importar ${nuevos.length} productos del catálogo local a Firestore?`)) return;
   try {
-    for (const p of CATALOGO_LOCAL) {
-      const { id, ...data } = p;
-      await addDoc(collection(db, "perfumes"), data);
+    // Lotes de 20 en paralelo para que no tarde minutos
+    for (let i = 0; i < nuevos.length; i += 20) {
+      await Promise.all(nuevos.slice(i, i + 20).map((p) => {
+        const { id, ...data } = p;
+        return addDoc(collection(db, "perfumes"), data);
+      }));
     }
-    toast("Catálogo importado.", "ok");
+    toast(`${nuevos.length} productos importados.`, "ok");
     await cargarProductos(); renderTodo();
   } catch (e) { toast("Error al importar: " + e.message, "error"); }
 }
