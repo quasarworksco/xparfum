@@ -4,8 +4,8 @@
    proveedores · moneda
    ═══════════════════════════════════════════════════════════════ */
 
-import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=11";
-import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=11";
+import { firebaseConfig, CLOUDINARY_CONFIG } from "./firebase-config.js?v=12";
+import { CATALOGO_LOCAL, DETAL_MARKUP } from "./data.js?v=12";
 
 /* ── Credenciales de acceso (uso interno, fijas en el código) ── */
 const ADMIN_USER = "admin";
